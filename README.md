@@ -1,7 +1,3 @@
-Here is your **final clean README** with everything included properly and no formatting issues:
-
----
-
 # 🧠 Emotion Estimation from Video Footage with LSTM (Reconstruction)
 
 ## 📌 Overview
@@ -10,12 +6,12 @@ This project reconstructs and analyzes the research paper:
 
 **Emotion estimation from video footage with LSTM**
 **Author:** Samer Attrah
-Paper: [https://www.frontiersin.org/journals/neurorobotics/articles/10.3389/fnbot.2025.1678984/full](https://www.frontiersin.org/journals/neurorobotics/articles/10.3389/fnbot.2025.1678984/full)
+🔗 [https://www.frontiersin.org/journals/neurorobotics/articles/10.3389/fnbot.2025.1678984/full](https://www.frontiersin.org/journals/neurorobotics/articles/10.3389/fnbot.2025.1678984/full)
 
 Original repository:
-[https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main](https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main)
+🔗 [https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main](https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main)
 
-The system performs facial emotion recognition using:
+The system performs **facial emotion recognition** using:
 
 * MediaPipe blendshape features
 * LSTM-based classification
@@ -30,18 +26,18 @@ This implementation reproduces the original pipeline and extends it with improve
 * Reproduce the original methodology
 * Validate reproducibility of results
 * Analyze model behavior and limitations
-* Demonstrate real-time emotion recognition
+* Demonstrate real-time inference
 * Improve performance via hyperparameter tuning
 
 ---
 
 ## 🚀 Features
 
-* Dataset preprocessing and balancing (FER2013)
+* Dataset preprocessing & balancing (FER2013)
 * Blendshape extraction (27 selected features)
 * LSTM-based emotion classification
 * Hyperparameter tuning with Keras Tuner
-* Evaluation and error analysis
+* Evaluation & error analysis
 * Feature visualization
 * Real-time webcam demo
 
@@ -56,70 +52,54 @@ This implementation reproduces the original pipeline and extends it with improve
 
 ---
 
-## 🧰 Recommended Environment (IMPORTANT)
+## 🧰 Recommended Environment
 
 This project is designed for:
 
 * Python **3.9**
 * Conda environment
 
-### Create environment
+### Setup
 
 ```bash
 conda create -n blendfer python=3.9
 conda activate blendfer
-```
-
-### Install dependencies
-
-```bash
 pip install -r requirements.txt
 ```
+
+---
+
 
 ## 📂 Dataset
 
 FER2013 dataset:
-[https://www.kaggle.com/datasets/nicolejyt/facialexpressionrecognition](https://www.kaggle.com/datasets/nicolejyt/facialexpressionrecognition)
+🔗 [https://www.kaggle.com/datasets/nicolejyt/facialexpressionrecognition](https://www.kaggle.com/datasets/nicolejyt/facialexpressionrecognition)
 
 ⚠️ Not included in this repository due to size.
 
 ---
 
-## 🧠 Model Details
-
-* Input: 27 blendshape features
-* Model: LSTM
-* Classes:
-
-  * 0 → Happy
-  * 1 → Unknown
-  * 2 → Sad
-
----
-
-## 🎥 Real-Time Demo
-
-Run:
+## 🎥 Real-Time Demo (Quick Start)
 
 ```bash
 python src/demo/webcam_demo.py
 ```
 
-Output classes:
+Output:
 
 * Happy
 * Unknown
 * Sad
 
-Works immediately after installation (no `.env` required).
+✔ No `.env` required
 
 ---
 
-### Full Pipeline (Requires `.env`)
+## ⚙️ Full Pipeline Configuration
 
-Create `.env` in the root directory:
+To run preprocessing, training, or tuning, create `.env`:
 
-```env
+```
 FER2013_DATASET_PATH="path/to/fer2013.csv"
 
 TRAIN_DATASET="data/training_set_full.csv"
@@ -138,8 +118,6 @@ KERAS_TUNER_EXPERIMENTS_DIR="keras_tuner_experiments"
 
 ## 📁 Required Files
 
-Ensure:
-
 ```
 models/face_landmarker_v2_with_blendshapes.task
 ckpt/epoch_40-val_loss_0.6317.keras
@@ -153,7 +131,7 @@ ckpt/epoch_40-val_loss_0.6317.keras
 project/
 ├── src/
 ├── ckpt/
-│   └── epoch_40-val_loss_0.6317.keras
+│   └── best_model.keras
 ├── models/
 │   └── face_landmarker_v2_with_blendshapes.task
 ├── data/
@@ -164,7 +142,107 @@ project/
 
 ---
 
-## ▶️ Usage
+# 🔁 Workflow Overview
+
+```
+Data → Preprocessing → Blendshape Extraction
+     → (Recommended) Hyperparameter Tuning
+     → Final Model Training → Evaluation
+```
+
+---
+
+# ⚙️ Recommended Workflow (Important)
+
+There are two ways to use this project:
+
+---
+
+## 🟢 Option 1 — Quick Training (No Tuning)
+
+If you just want a working model quickly:
+
+```bash
+python src/data/data_cleaning.py
+python src/data/augmenting_and_normalizing.py
+python src/mediapipe_tools/blendshapes_dataset.py
+python src/data/dataset_indexing.py
+python src/model/model_training.py
+```
+
+✔ Faster
+❌ Not optimized
+
+---
+
+## 🔵 Option 2 — Recommended (With Hyperparameter Tuning)
+
+This gives better performance.
+
+---
+
+### Step 1 — Prepare Data
+
+```bash
+python src/data/data_cleaning.py
+python src/data/augmenting_and_normalizing.py
+python src/mediapipe_tools/blendshapes_dataset.py
+python src/data/dataset_indexing.py
+```
+
+---
+
+### Step 2 — Run Hyperparameter Tuning
+
+```bash
+python src/model/keras_tuner_experimenter.py
+```
+
+Results saved in:
+
+```
+keras_tuner_experiments/
+```
+
+---
+
+### Step 3 — Apply Best Parameters
+
+Open tuning results and update:
+
+```
+src/model/model_training.py
+```
+
+---
+
+### Step 4 — Train Final Model
+
+```bash
+python src/model/model_training.py
+```
+
+---
+
+## ⭐ Important Notes
+
+* Keras Tuner performs multiple training runs internally
+* Running training before tuning is unnecessary
+* Final training is required after tuning
+
+---
+
+## ⏱️ Time Consideration
+
+| Step                 | Time          |
+| -------------------- | ------------- |
+| Training (no tuning) | ~85 minutes   |
+| Tuning               | ~7 hours      |
+| Final training       | ~85 minutes   |
+
+---
+
+## ▶️ Additional Usage
 
 ### Evaluate model
 
@@ -186,74 +264,20 @@ python src/utils/test_data_visualization.py
 
 ---
 
-## 🔁 Full Pipeline (If you want to re-train the model)
-
-```bash
-python src/data/data_cleaning.py
-python src/data/augmenting_and_normalizing.py
-python src/mediapipe_tools/blendshapes_dataset.py
-python src/data/dataset_indexing.py
-python src/model/model_training.py
-```
-
----
-
-## ⚙️ Hyperparameter Tuning (Keras Tuner)
-
-Run:
-
-```bash
-python src/model/keras_tuner_experimenter.py
-```
-
-Results are saved in:
-
-```
-keras_tuner_experiments/
-```
-
----
-
-## ⭐ IMPORTANT: Retrain After Tuning
-
-Keras Tuner does NOT produce the final model.
-
-You MUST:
-
-1. Check best hyperparameters from tuning output
-2. Apply them manually in:
-
-```
-src/model/model_training.py
-```
-
-3. Retrain:
-
-```bash
-python src/model/model_training.py
-```
-
-If you skip this step:
-
-* you are NOT using optimized parameters
-* your results will not reflect tuning
-
----
-
 ## 📉 Key Findings
 
-* Dataset imbalance causes model collapse
-* Balancing improves performance
-* Blendshape features overlap heavily
+* Dataset imbalance can cause model collapse
+* Balancing significantly improves performance
+* Blendshape features overlap across classes
 * "Sad" is hardest to classify
-* LSTM captures feature relationships
+* LSTM captures feature relationships effectively
 
 ---
 
 ## ⚠️ Limitations
 
-* Weak performance on Sad
-* Feature overlap
+* Lower performance on "Sad"
+* Feature overlap reduces separability
 * Sensitive to lighting
 
 ---
@@ -262,7 +286,7 @@ If you skip this step:
 
 * Improve minority class detection
 * Use multimodal inputs
-* Explore different architectures
+* Explore alternative architectures
 
 ---
 
@@ -274,7 +298,7 @@ This project is a reconstruction of:
 Samer Attrah
 
 Original implementation:
-[https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main](https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main)
+🔗 [https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main](https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main)
 
 ---
 
