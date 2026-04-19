@@ -56,24 +56,6 @@ This implementation reproduces the original pipeline and extends it with improve
 
 ---
 
-## 🎥 Real-Time Demo
-
-Run:
-
-```bash
-python src/demo/webcam_demo.py
-```
-
-Output classes:
-
-* Happy
-* Unknown
-* Sad
-
-Works immediately after installation (no `.env` required).
-
----
-
 ## 🧰 Recommended Environment (IMPORTANT)
 
 This project is designed for:
@@ -115,15 +97,21 @@ FER2013 dataset:
 
 ---
 
-## ⚙️ Environment Configuration
+## 🎥 Real-Time Demo
 
-### Quick Demo (No `.env`)
-
-You can directly run:
+Run:
 
 ```bash
 python src/demo/webcam_demo.py
 ```
+
+Output classes:
+
+* Happy
+* Unknown
+* Sad
+
+Works immediately after installation (no `.env` required).
 
 ---
 
