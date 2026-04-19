@@ -1,8 +1,12 @@
+Here is your **final clean README** with everything included properly and no formatting issues:
+
+---
+
 # 🧠 Emotion Estimation from Video Footage with LSTM (Reconstruction)
 
 ## 📌 Overview
 
-This project reconstructs and analyzes the paper:
+This project reconstructs and analyzes the research paper:
 
 **Emotion estimation from video footage with LSTM**
 **Author:** Samer Attrah
@@ -17,7 +21,7 @@ The system performs facial emotion recognition using:
 * LSTM-based classification
 * Real-time webcam inference
 
-This implementation reproduces the original pipeline and extends it with improved preprocessing, evaluation, and deployment.
+This implementation reproduces the original pipeline and extends it with improved preprocessing, evaluation, hyperparameter tuning, and deployment.
 
 ---
 
@@ -27,6 +31,7 @@ This implementation reproduces the original pipeline and extends it with improve
 * Validate reproducibility of results
 * Analyze model behavior and limitations
 * Demonstrate real-time emotion recognition
+* Improve performance via hyperparameter tuning
 
 ---
 
@@ -35,6 +40,7 @@ This implementation reproduces the original pipeline and extends it with improve
 * Dataset preprocessing and balancing (FER2013)
 * Blendshape extraction (27 selected features)
 * LSTM-based emotion classification
+* Hyperparameter tuning with Keras Tuner
 * Evaluation and error analysis
 * Feature visualization
 * Real-time webcam demo
@@ -43,36 +49,37 @@ This implementation reproduces the original pipeline and extends it with improve
 
 ## 📊 Results
 
-| Metric   |   Paper | This Project |
-| -------- | ------: | -----------: |
-| Accuracy | ~71.99% |   **74.81%** |
-| F1-score |   ~0.63 |     **0.66** |
-
-The reconstructed model achieves comparable and slightly improved performance.
+| Metric   | Paper   | This Project |
+| -------- | ------- | ------------ |
+| Accuracy | ~71.99% | **74.81%**   |
+| F1-score | ~0.63   | **0.66**     |
 
 ---
 
 ## 🎥 Real-Time Demo
 
-Run the webcam demo:
+Run:
 
 ```bash
 python src/demo/webcam_demo.py
 ```
 
-### Output classes
+Output classes:
 
 * Happy
 * Unknown
 * Sad
 
-The webcam demo works without `.env` because the MediaPipe and model paths were made local in the demo-related setup.
+Works immediately after installation (no `.env` required).
 
 ---
 
-## 🧰 Recommended Environment
+## 🧰 Recommended Environment (IMPORTANT)
 
-This project is intended to run in a **Conda environment with Python 3.9**.
+This project is designed for:
+
+* Python **3.9**
+* Conda environment
 
 ### Create environment
 
@@ -87,39 +94,19 @@ conda activate blendfer
 pip install -r requirements.txt
 ```
 
-### Important compatibility note
-
-If you get an error like:
-
-```text
-ImportError: cannot import name 'solutions' from 'mediapipe'
-```
-
-install the compatible MediaPipe version:
-
-```bash
-pip uninstall mediapipe -y
-pip install mediapipe==0.10.9
-```
-
-This project uses code that depends on `mediapipe.solutions`, so using an incompatible MediaPipe version may break the demo or preprocessing scripts.
-
----
-
 ## 📂 Dataset
 
-This project uses the FER2013 dataset:
-
+FER2013 dataset:
 [https://www.kaggle.com/datasets/nicolejyt/facialexpressionrecognition](https://www.kaggle.com/datasets/nicolejyt/facialexpressionrecognition)
 
-The dataset is not included in this repository due to size.
+⚠️ Not included in this repository due to size.
 
 ---
 
 ## 🧠 Model Details
 
 * Input: 27 blendshape features
-* Architecture: LSTM
+* Model: LSTM
 * Classes:
 
   * 0 → Happy
@@ -130,92 +117,42 @@ The dataset is not included in this repository due to size.
 
 ## ⚙️ Environment Configuration
 
-## Quick Demo
+### Quick Demo (No `.env`)
 
-No `.env` is required for:
+You can directly run:
 
 ```bash
 python src/demo/webcam_demo.py
 ```
 
-## Full Pipeline
+---
 
-For preprocessing, training, and full reproducibility, `.env` is required.
+### Full Pipeline (Requires `.env`)
 
-Create a `.env` file in the project root by copying `.env.example`.
-
-### `.env.example`
+Create `.env` in the root directory:
 
 ```env
-# ==============================
-# DATASET PATH
-# ==============================
-
 FER2013_DATASET_PATH="path/to/fer2013.csv"
-
-# ==============================
-# PROCESSED DATA FILES
-# ==============================
 
 TRAIN_DATASET="data/training_set_full.csv"
 VAL_DATASET="data/validation_set_full.csv"
 TEST_DATASET="data/test_set_full.csv"
 FULL_TEST_SET="data/test_set_full_index.csv"
 
-# ==============================
-# MEDIAPIPE MODEL
-# ==============================
-
 FACE_LANDMARKER="models/face_landmarker_v2_with_blendshapes.task"
-
-# ==============================
-# TRAINED MODEL
-# ==============================
 
 SAVED_MODEL_PATH="ckpt/epoch_40-val_loss_0.6317.keras"
 
-# ==============================
-# KERAS TUNER OUTPUT
-# ==============================
-
 KERAS_TUNER_EXPERIMENTS_DIR="keras_tuner_experiments"
-```
-
-### Create `.env`
-
-**Linux / macOS**
-
-```bash
-cp .env.example .env
-```
-
-**Windows CMD**
-
-```cmd
-copy .env.example .env
-```
-
-**PowerShell**
-
-```powershell
-Copy-Item .env.example .env
-```
-
-### Update dataset path
-
-Edit this line in `.env`:
-
-```env
-FER2013_DATASET_PATH="your/path/to/fer2013.csv"
 ```
 
 ---
 
 ## 📁 Required Files
 
-Make sure these files exist:
+Ensure:
 
-```text
+```
 models/face_landmarker_v2_with_blendshapes.task
 ckpt/epoch_40-val_loss_0.6317.keras
 ```
@@ -224,7 +161,7 @@ ckpt/epoch_40-val_loss_0.6317.keras
 
 ## 📁 Project Structure
 
-```text
+```
 project/
 ├── src/
 ├── ckpt/
@@ -241,25 +178,19 @@ project/
 
 ## ▶️ Usage
 
-### Webcam Demo
-
-```bash
-python src/demo/webcam_demo.py
-```
-
-### Evaluate Model
+### Evaluate model
 
 ```bash
 python src/model/evaluation.py
 ```
 
-### Error Analysis
+### Error analysis
 
 ```bash
 python src/utils/error_analysis.py
 ```
 
-### Feature Visualization
+### Feature visualization
 
 ```bash
 python src/utils/test_data_visualization.py
@@ -267,31 +198,7 @@ python src/utils/test_data_visualization.py
 
 ---
 
-## 🔁 Retraining the Model
-
-## Before retraining
-
-Delete old checkpoints first so the new run is easier to track.
-
-**Windows (CMD)**
-
-```cmd
-del /q ckpt\*
-```
-
-**PowerShell**
-
-```powershell
-Remove-Item ckpt\* -Force
-```
-
-**Linux / macOS**
-
-```bash
-rm -rf ckpt/*
-```
-
-## Full pipeline
+## 🔁 Full Pipeline
 
 ```bash
 python src/data/data_cleaning.py
@@ -301,54 +208,85 @@ python src/data/dataset_indexing.py
 python src/model/model_training.py
 ```
 
-## Optional analysis after training
+---
+
+## ⚙️ Hyperparameter Tuning (Keras Tuner)
+
+Run:
 
 ```bash
-python src/model/evaluation.py
-python src/utils/error_analysis.py
-python src/utils/test_data_visualization.py
+python src/model/keras_tuner_experimenter.py
 ```
+
+Results are saved in:
+
+```
+keras_tuner_experiments/
+```
+
+---
+
+## ⭐ IMPORTANT: Retrain After Tuning
+
+Keras Tuner does NOT produce the final model.
+
+You MUST:
+
+1. Check best hyperparameters from tuning output
+2. Apply them manually in:
+
+```
+src/model/model_training.py
+```
+
+3. Retrain:
+
+```bash
+python src/model/model_training.py
+```
+
+If you skip this step:
+
+* you are NOT using optimized parameters
+* your results will not reflect tuning
 
 ---
 
 ## 📉 Key Findings
 
-* Dataset imbalance can cause model collapse
-* Balancing significantly improves performance
-* Blendshape features overlap across classes
-* Sad is the hardest emotion to classify
-* LSTM captures complex feature relationships
+* Dataset imbalance causes model collapse
+* Balancing improves performance
+* Blendshape features overlap heavily
+* "Sad" is hardest to classify
+* LSTM captures feature relationships
 
 ---
 
 ## ⚠️ Limitations
 
-* Lower performance on the Sad class
-* Feature overlap reduces separability
-* Sensitive to lighting and face detection quality
+* Weak performance on Sad
+* Feature overlap
+* Sensitive to lighting
 
 ---
 
 ## 🚀 Future Work
 
 * Improve minority class detection
-* Use multimodal inputs such as audio and video together
-* Explore alternative architectures
-* Improve robustness in real-world conditions
+* Use multimodal inputs
+* Explore different architectures
 
 ---
 
 ## 🙏 Acknowledgment
 
-This project is a reconstruction and extension of:
+This project is a reconstruction of:
 
 **Emotion estimation from video footage with LSTM**
-**Samer Attrah**
+Samer Attrah
 
 Original implementation:
 [https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main](https://github.com/Samir-atra/Emotion_estimation_from_video_footage_with_LSTM_ML_algorithm/tree/main)
-
-All core methodology and concepts belong to the original author.
 
 ---
 
@@ -357,10 +295,3 @@ All core methodology and concepts belong to the original author.
 M. Hisyam Al Firdaus
 
 ---
-
-## ✅ Summary
-
-* Reproducible
-* Improved
-* Real-time
-* Deployable
