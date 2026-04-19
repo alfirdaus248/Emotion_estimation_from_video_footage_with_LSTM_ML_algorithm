@@ -186,7 +186,7 @@ python src/utils/test_data_visualization.py
 
 ---
 
-## 🔁 Full Pipeline
+## 🔁 Full Pipeline (If you want to re-train the model)
 
 ```bash
 python src/data/data_cleaning.py
