@@ -10,7 +10,7 @@ import os
 import tensorflow as tf
 import mediapipe as mp
 from dotenv import load_dotenv
-from data_processing import balanced_dataset
+import csv
 from mediapipe_tools.visualizing_and_setup import detector
 from utils.csv_writer import csv_writer
 
@@ -56,56 +56,58 @@ def sets_cleaner(data_set_path):
     Cleans a dataset by filtering out images that are not recognizable by MediaPipe's
     face detector (i.e., no blendshapes are detected).
 
-    This function reads image data from a specified dataset path, processes each image
-    to be compatible with MediaPipe, and then uses the MediaPipe detector to check for
-    face blendshapes. Only images where blendshapes are detected are included in the
-    returned cleaned dataset.
-
     Args:
         data_set_path (str): The environment variable key (e.g., "TRAIN_DATASET")
                              that points to the path of the dataset CSV file.
 
     Returns:
-        list: A list of cleaned data instances, where each instance's image has been
-              successfully processed and detected by MediaPipe.
+        list: A list of cleaned data instances.
     """
     data_set = []
+    kept = 0
+    skipped = 0
 
     # Read the dataset file using TensorFlow's file I/O
     data = tf.io.read_file(os.getenv(data_set_path))
     f = tf.strings.split(data, sep="\n")
-    
-    # Loop through each line (instance) in the dataset, skipping the header and last empty line
+
+    # Create detector once, not inside the loop
+    face_landmarker_detector = detector()
+
+    # Loop through each line in the dataset, skipping header and last empty line
     for lines in f[1:-1]:
-        # Extract pixel data from the CSV line and convert to a list of strings
-        image_pixels_str = (
-            str(tf.strings.as_string(lines).numpy().decode("utf-8"))
-            .split(",")[1]
-            .split(" ")
-        )
-        
-        # Convert pixel strings to TensorFlow tensor, reshape, and convert to RGB
-        # These steps are necessary for MediaPipe compatibility and are optimized with TensorFlow.
-        # For more details: https://medium.com/@samiratra95/image-augmentation-using-tensorflow-and-mediapipe-baf54651f9fc
+        line_str = tf.strings.as_string(lines).numpy().decode("utf-8")
+        parts = line_str.split(",")
+
+        # Safety check in case a row is malformed
+        if len(parts) < 3:
+            skipped += 1
+            continue
+
+        image_pixels_str = parts[1].split(" ")
+
+        # Convert pixel strings to tensor, reshape to 48x48x1, then grayscale -> RGB
         image_tensor = tf.convert_to_tensor(image_pixels_str)
         image_tensor = tf.make_tensor_proto(image_tensor, dtype=tf.uint8)
         image_array = tf.make_ndarray(image_tensor).reshape(48, 48, 1)
         image_tensor_uint8 = tf.convert_to_tensor(image_array, dtype=tf.uint8)
         rgb_image = tf.image.grayscale_to_rgb(image_tensor_uint8).numpy()
-        
+
         # Create MediaPipe Image object
         frame = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
-        
-        # Detect face blendshapes using MediaPipe detector
-        face_landmarker_detector = detector()
-        detection_result = face_landmarker_detector.detect(frame)
-        
-        # If blendshapes are detected, add the original data instance to the cleaned set
-        if detection_result.face_blendshapes == []:
-            continue  # Skip images where no face is detected
-        else:
-            data_set.append(str(tf.strings.as_string(lines).numpy().decode("utf-8")).split(","))
 
+        # Detect face blendshapes using MediaPipe detector
+        detection_result = face_landmarker_detector.detect(frame)
+
+        if detection_result.face_blendshapes == []:
+            skipped += 1
+            continue
+        else:
+            clean_row = [parts[0].strip(), parts[1].strip(), parts[2].strip()]
+            data_set.append(clean_row)
+            kept += 1
+
+    print(f"{data_set_path}: kept={kept}, skipped={skipped}, total={kept + skipped}")
     return data_set
 
 
@@ -119,21 +121,34 @@ def write_files(training_data, validation_data, test_data):
         test_data (list): The cleaned test set instances.
     """
     fields = ["emotion", "pixels", "Usage"]
-    csv_writer("training_set_full.csv", fields, training_data)
-    csv_writer("validation_set_full.csv", fields, validation_data)
-    csv_writer("test_set_full.csv", fields, test_data)
+    csv_writer("data/training_set_full.csv", fields, training_data)
+    csv_writer("data/validation_set_full.csv", fields, validation_data)
+    csv_writer("data/test_set_full.csv", fields, test_data)
 
 
-if __name__=="__main__":
-    # Example usage when run as a script
-    # Note: The path for balanced_dataset should be an absolute path or correctly resolved.
-    fullset = balanced_dataset("/home/samer/Desktop/HAN stuff/Big data Small Data/BDSD/Minor_project/BDSD_Minor_Project/Datasets/training_set_full.csv")
+if __name__ == "__main__":
+    # Build the balanced dataset directly from the original FER2013 CSV
+   # Read the original FER2013 CSV directly
+    fullset = []
+    with open(os.getenv("FER2013_DATASET_PATH"), mode="r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader)  # skip header
+        for row in reader:
+            fullset.append(row)
+
+    # Split into train / val / test based on the Usage column
     training_set, validation_set, test_set = list_creator(fullset)
-    
-    # Clean each dataset split using MediaPipe detection
+
+    # Save split files first so sets_cleaner() can read them
+    fields = ["emotion", "pixels", "Usage"]
+    csv_writer("data/training_set_full.csv", fields, training_set)
+    csv_writer("data/validation_set_full.csv", fields, validation_set)
+    csv_writer("data/test_set_full.csv", fields, test_set)
+
+    # Then clean them with MediaPipe
     training_set_hus = sets_cleaner("TRAIN_DATASET")
     validation_set_hus = sets_cleaner("VAL_DATASET")
     test_set_hus = sets_cleaner("TEST_DATASET")
-    
-    # Write the cleaned datasets to new CSV files
+
+    # Overwrite with cleaned versions
     write_files(training_set_hus, validation_set_hus, test_set_hus)

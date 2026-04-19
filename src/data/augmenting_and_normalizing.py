@@ -19,7 +19,14 @@ from mediapipe_tools.visualizing_and_setup import detector
 
 load_dotenv()
 
-training_set_hus = sets_cleaner(os.getenv("TRAIN_DATASET"))
+import csv
+
+training_set_hus = []
+with open(os.getenv("TRAIN_DATASET"), encoding="utf-8") as f:
+    reader = csv.reader(f)
+    next(reader)
+    for row in reader:
+        training_set_hus.append(row)
 
 
 def augment_load_data(training_set):
@@ -44,16 +51,35 @@ def augment_load_data(training_set):
 
     training_images = []
     training_labels = []
+    skipped_rows = 0
 
-    # Iterate through the training set to extract images and labels
-    for i in range(math.floor(len(training_set))):
-        # Convert pixel string to NumPy array and reshape to 48x48 grayscale
-        image = (
-            np.array(training_set[i][1].split()).reshape(48, 48, 1).astype(np.uint8)
-        )
-        training_images.append(image)
-        training_labels.append(int(training_set[i][0]))
+    for row in training_set:
+        if len(row) < 3:
+            skipped_rows += 1
+            continue
 
+        label = str(row[0]).strip()
+        pixels = str(row[1]).strip()
+
+        if not label or not pixels:
+            skipped_rows += 1
+            continue
+
+        pixel_values = pixels.split()
+
+        if len(pixel_values) != 2304:
+            skipped_rows += 1
+            continue
+
+        try:
+            image = np.array(pixel_values, dtype=np.uint8).reshape(48, 48, 1)
+            training_images.append(image)
+            training_labels.append(int(label))
+        except Exception:
+            skipped_rows += 1
+            continue
+
+    print(f"Loaded {len(training_images)} valid rows, skipped {skipped_rows} malformed rows")
     return training_images, training_labels
 
 
@@ -85,7 +111,7 @@ def augmentation_models():
     return rescaling1, rescaling2, augment
 
 
-def augment_images(training_images, training_labels, rescaling1, rescaling2, augment):
+def augment_images(training_images, training_labels, original_training_set, rescaling1, rescaling2, augment):
     """
     Augments images in the training set, processes them, and checks their validity
     using MediaPipe face detection before adding them to the augmented dataset.
@@ -118,28 +144,23 @@ def augment_images(training_images, training_labels, rescaling1, rescaling2, aug
     for idx, img in enumerate(training_images):
         image = img
         label = training_labels[idx]
-        
-        # Apply rescaling and augmentation
+
         image = rescaling1(image)
-        aug_image = augment(image)                   # Apply augmentations on the image
+        aug_image = augment(image)
         aug_image = rescaling2(aug_image)
-        aug_image = tf.cast(aug_image, tf.uint8)        # Cast pixel values into integers
+        aug_image = tf.cast(aug_image, tf.uint8)
         aug_image = np.array(aug_image)
-        
-        # Flatten the augmented image for CSV storage
+
         flatten_image = aug_image.flatten()
-        flat_aug_image = [flatten_image[i] for i in range(0, len(flatten_image))]
-        
-        # Prepare image for MediaPipe detection
+        flat_aug_image = [flatten_image[i] for i in range(len(flatten_image))]
+
         frame = mp.Image(image_format=mp.ImageFormat.SRGB, data=aug_image)
         face_landmarker_detector = detector()
-
-        # Check if the face in the augmented image is detectable with MediaPipe
         detection_result = face_landmarker_detector.detect(frame)
+
         if detection_result.face_blendshapes == []:
-            continue  # Skip if no face is detected
+            continue
         else:
-            # Format the augmented image data and label for the new training set
             element = [label]
             for i in flat_aug_image:
                 element.append(i)
@@ -150,8 +171,9 @@ def augment_images(training_images, training_labels, rescaling1, rescaling2, aug
                     "Training",
                 ]
             )
-    # Write the augmented training set to a CSV file
-    csv_writer("training_set_full.csv", ['emotion','pixels'], augmented_training_set)
+
+    full_training_set = original_training_set + augmented_training_set
+    csv_writer("data/training_set_full.csv", ['emotion', 'pixels', 'Usage'], full_training_set)
 
     return augmented_training_set
 
@@ -197,3 +219,26 @@ def normalize(x_train, x_val):
     nx_val = np.array(x_val)
 
     return nx_train, nx_val
+
+if __name__ == "__main__":
+    print("Loading and preparing training data...")
+
+    training_images, training_labels = augment_load_data(training_set_hus)
+
+    print(f"Loaded {len(training_images)} images")
+
+    print("Building augmentation models...")
+    rescaling1, rescaling2, augment = augmentation_models()
+
+    print("Running augmentation (this will take time)...")
+
+    augmented_training_set = augment_images(
+        training_images,
+        training_labels,
+        training_set_hus,
+        rescaling1,
+        rescaling2,
+        augment,
+    )
+
+    print(f"Augmented samples created: {len(augmented_training_set)}")

@@ -27,7 +27,7 @@ def csv_writer(filename, fields, data):
     header_fields = fields # Assign the header fields to a local variable
     
     # Open the CSV file in append mode with UTF-8 encoding
-    with open(csvfile, mode="a", encoding="utf-8") as file_obj:
+    with open(csvfile, mode="w", encoding="utf-8", newline="") as file_obj:
         csvwriter = csv.writer(file_obj)
         csvwriter.writerow(header_fields) # Write the header row to the CSV file
         csvwriter.writerows(data)        # Write all data rows to the CSV file

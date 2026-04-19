@@ -96,7 +96,7 @@ def plot_face_blendshapes_bar_graph(face_blendshapes):
 def detector():
     # Create an FaceLandmarker object.
     base_options = python.BaseOptions(
-      model_asset_path=os.getenv("FACE_LANDMARKER"),
+      model_asset_path="models/face_landmarker_v2_with_blendshapes.task",
       delegate=mp.tasks.BaseOptions.Delegate.CPU
       )
     options = vision.FaceLandmarkerOptions(base_options=base_options,

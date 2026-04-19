@@ -52,41 +52,59 @@ def train_model(x_train, y_train, x_val, y_val):
     model = keras.Sequential(
         [
             keras.layers.LSTM(
-                units=53,
+                units=34,
                 activation="selu",
                 return_sequences=True,
                 kernel_regularizer=keras.regularizers.L2(l2=0.00000195),
             ),
             keras.layers.LSTM(
-                units=16,
-                activation="selu",
+                units=26,
+                activation="tanh",
                 return_sequences=True,
-                kernel_regularizer=keras.regularizers.L2(l2=0.00000195),
+                kernel_regularizer=keras.regularizers.L2(l2=1.5774485705635927e-07),
             ),
             keras.layers.LSTM(
-                units=48,
-                activation="selu",
+                units=14,
+                activation="tanh",
                 return_sequences=True,
-                kernel_regularizer=keras.regularizers.L2(l2=0.00000195),
+                kernel_regularizer=keras.regularizers.L2(l2=1.5774485705635927e-07),
             ),
             keras.layers.LSTM(
-                units=44,
-                activation="selu",
-                return_sequences=False, # Last LSTM layer does not return sequences
+                units=14,
+                activation="tanh",
+                return_sequences=True,
+                kernel_regularizer=keras.regularizers.L2(l2=1.5774485705635927e-07),
+            ),
+            keras.layers.LSTM(
+                units=14,
+                activation="tanh",
+                return_sequences=True,
+                kernel_regularizer=keras.regularizers.L2(l2=1.5774485705635927e-07),
+            ),
+            keras.layers.LSTM(
+                units=14,
+                activation="tanh",
+                return_sequences=True,
+                kernel_regularizer=keras.regularizers.L2(l2=1.5774485705635927e-07),
+            ),
+            keras.layers.LSTM(
+                units=30,
+                activation="tanh",
+                return_sequences=False,
                 kernel_regularizer=keras.regularizers.L2(l2=0.00000195),
             ),
-            keras.layers.Dense(units=3, activation="softmax"), # Output layer for 3 emotion classes
+            keras.layers.Dense(units=3, activation="softmax"),
         ]
     )
     
     # Compile the model with AdamW optimizer and specified learning rate, weight decay, and metrics
     model.compile(
         loss=keras.losses.CategoricalCrossentropy(), # Using categorical cross-entropy for one-hot encoded labels
-        optimizer=keras.optimizers.AdamW(
-            learning_rate = 1.0955e-06, # Optimal learning rate from tuning
-            global_clipnorm = 1, # Global norm clipping for gradients
-            amsgrad = True,
-            weight_decay = 5.468661421085422e-05, # Optimal weight decay from tuning
+        optimizer=keras.optimizers.Adam(
+            learning_rate=0.0007880621679373363,
+            global_clipnorm=1,
+            amsgrad=True,
+            weight_decay=1.6709469947924033e-06,
         ),
         metrics=[
             keras.metrics.CategoricalCrossentropy(), # Monitor classification loss
@@ -96,7 +114,7 @@ def train_model(x_train, y_train, x_val, y_val):
     )
 
     # Configure ModelCheckpoint callback to save the best model weights
-    checkpoint_filepath = "ckpt/epoch:{epoch:02d}-val_loss:{val_loss:.4f}.keras"
+    checkpoint_filepath = "ckpt/epoch_{epoch:02d}-val_loss_{val_loss:.4f}.keras"
     model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_filepath,
             monitor="val_loss",      # Monitor validation loss
@@ -116,9 +134,9 @@ def train_model(x_train, y_train, x_val, y_val):
     )
 
     # Assigning weights for the classes (currently untuned and set to equal weights)
-    weight_for_0 = 1
-    weight_for_1 = 1
-    weight_for_2 = 1
+    weight_for_0 = 2.0   # happy
+    weight_for_1 = 1.0   # unknown
+    weight_for_2 = 2.0   # sad
 
     class_weight = {0: weight_for_0, 1: weight_for_1, 2: weight_for_2}
 
@@ -127,14 +145,14 @@ def train_model(x_train, y_train, x_val, y_val):
         x=x_train,
         y=y_train,
         validation_data=(x_val, y_val),
-        epochs=20, # Number of training epochs
+        epochs=300, # Number of training epochs
         batch_size=150,
         verbose=2, # Verbosity mode (2 = one line per epoch)
         class_weight=class_weight, # Apply class weights during training
         callbacks=[model_checkpoint_callback, early_stop, tboard_callback], # Use defined callbacks
     )
     # Plot the final model structure and save it (optional, can be commented out)
-    keras.utils.plot_model(model, show_shapes=True, rankdir="LR")
+    # keras.utils.plot_model(model, show_shapes=True, rankdir="LR")
 
     return model
 

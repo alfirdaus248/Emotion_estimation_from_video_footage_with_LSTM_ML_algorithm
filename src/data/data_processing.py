@@ -82,68 +82,56 @@ def categories_and_unreadable_counter(fer2013_path):
 
 
 def balanced_dataset(full_set_path):
-    """
-    Creates a class-balanced dataset by sampling a limited number of images
-    from each of the original seven emotion classes and remapping them into
-    a three-class system (Happy, Sad, Unknown).
-
-    This function reads a full dataset, iterates through its instances, and selectively
-    appends images to a new dataset (`fullset`) based on class limits to achieve balance.
-    Original emotion labels are remapped as follows:
-    - Original classes 0, 1, 2, 5, 6 are remapped to '1' (e.g., Sad, Fear, Disgust, Surprise, Neutral).
-    - Original class 3 (Happy) is remapped to '0'.
-    - Original class 4 (Angry) is remapped to '2'.
-
-    Args:
-        full_set_path (str): The absolute path to the full dataset CSV file.
-
-    Returns:
-        list: A list representing the new class-balanced dataset with remapped labels.
-    """
-
     fullset = []
-    class_counter = {"0": 0, "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, "6": 0}
+
+    happy = []
+    sad = []
+    unknown = []
+
+    TARGET_HAPPY = 4000
+    TARGET_SAD = 4000
+    TARGET_UNKNOWN = 6000
+
+    OTHER_CLASSES = ["0", "1", "2", "5", "6"]
 
     with open(full_set_path, mode="r", encoding="utf-8") as data:
         csvfile = csv.reader(data)
-        next(csvfile)  # Skip the header row
-        
-        # Iterate over the dataset and append images to a list, applying class limits and remapping labels
-        for lines in csvfile:
-            # Remap and limit images for class '1' (Sad, Fear, Disgust, Surprise, Neutral)
-            if lines[0] == "0" and class_counter["0"] < 1500:
-                class_counter[lines[0]] = class_counter[lines[0]] + 1
-                lines[0] = "1"  # Remap to '1'
-                fullset.append(lines)
-            elif lines[0] == "1" and class_counter["1"] < 1500:
-                class_counter[lines[0]] = class_counter[lines[0]] + 1
-                lines[0] = "1"  # Remap to '1'
-                fullset.append(lines)
-            elif lines[0] == "2" and class_counter["2"] < 1500:
-                class_counter[lines[0]] = class_counter[lines[0]] + 1
-                lines[0] = "1"  # Remap to '1'
-                fullset.append(lines)
-            # Remap and limit images for class '0' (Happy)
-            elif lines[0] == "3" and class_counter["3"] < 4000:
-                class_counter[lines[0]] = class_counter[lines[0]] + 1
-                lines[0] = "0"  # Remap to '0'
-                fullset.append(lines)
-            # Remap and limit images for class '2' (Angry)
-            elif lines[0] == "4" and class_counter["4"] < 4000:
-                class_counter[lines[0]] = class_counter[lines[0]] + 1
-                lines[0] = "2"  # Remap to '2'
-                fullset.append(lines)
-            # Remap and limit images for class '1' (Sad, Fear, Disgust, Surprise, Neutral)
-            elif lines[0] == "5" and class_counter["5"] < 1500:
-                class_counter[lines[0]] = class_counter[lines[0]] + 1
-                lines[0] = "1"  # Remap to '1'
-                fullset.append(lines)
-            elif lines[0] == "6" and class_counter["6"] < 1500:
-                class_counter[lines[0]] = class_counter[lines[0]] + 1
-                lines[0] = "1"  # Remap to '1'
-                fullset.append(lines)
+        next(csvfile)
 
-    print("Class distribution after balancing and remapping:", class_counter)
+        for lines in csvfile:
+            label = lines[0]
+
+            # Happy
+            if label == "3" and len(happy) < TARGET_HAPPY:
+                lines[0] = "0"
+                happy.append(lines)
+
+            # Sad (Angry in original mapping)
+            elif label == "4" and len(sad) < TARGET_SAD:
+                lines[0] = "2"
+                sad.append(lines)
+
+            # Unknown
+            elif label in OTHER_CLASSES and len(unknown) < TARGET_UNKNOWN:
+                lines[0] = "1"
+                unknown.append(lines)
+
+            # Stop early if all targets reached
+            if (
+                len(happy) >= TARGET_HAPPY and
+                len(sad) >= TARGET_SAD and
+                len(unknown) >= TARGET_UNKNOWN
+            ):
+                break
+
+    fullset = happy + sad + unknown
+
+    print("\n=== FINAL BALANCED DISTRIBUTION ===")
+    print(f"Happy: {len(happy)}")
+    print(f"Sad: {len(sad)}")
+    print(f"Unknown: {len(unknown)}")
+    print(f"Total: {len(fullset)}")
+
     return fullset
 
 
